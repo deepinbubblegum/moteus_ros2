@@ -1,0 +1,15 @@
+running develop
+running egg_info
+writing moteus_motor.egg-info/PKG-INFO
+writing dependency_links to moteus_motor.egg-info/dependency_links.txt
+writing entry points to moteus_motor.egg-info/entry_points.txt
+writing requirements to moteus_motor.egg-info/requires.txt
+writing top-level names to moteus_motor.egg-info/top_level.txt
+reading manifest file 'moteus_motor.egg-info/SOURCES.txt'
+writing manifest file 'moteus_motor.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/bubble/Develops/ROS2/pkg_dev_ws/install/moteus_motor/lib/python3.10/site-packages/moteus-motor.egg-link (link to .)
+Installing moteus_motor script to /home/bubble/Develops/ROS2/pkg_dev_ws/install/moteus_motor/lib/moteus_motor
+
+Installed /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_motor
+running install_data

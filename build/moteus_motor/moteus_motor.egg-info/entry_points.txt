@@ -1,0 +1,3 @@
+[console_scripts]
+moteus_motor = moteus_motor.moteus_node:main
+
