@@ -11,7 +11,7 @@ from moteus_msgs.msg import MoteusState, MoteusStateStamped
 
 class MoteusNode(Node):
     def __init__(self):
-        super().__init__('moteus_motor')
+        super().__init__('moteus_drive')
         # declare parameters
         self.declare_param()
         
