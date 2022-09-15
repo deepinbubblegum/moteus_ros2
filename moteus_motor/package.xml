@@ -4,11 +4,10 @@
   <name>moteus_motor</name>
   <version>0.0.1</version>
   <description>moteus_motor</description>
-  <maintainer email="chaiwit.p@groupmaker.co.th">bubble</maintainer>
-  <license>Apache-2.0</license>
+  <maintainer email="chaiwit.p@groupmaker.co.th">chaiwit</maintainer>
+  <license>Apache License 2.0</license>
 
   <depend>rclpy</depend>
-
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -76,7 +76,6 @@ class MoteusNode(Node):
     def drive_terminate(self):
         self.get_logger().info('MoteusNode terminated')
         self.moteusDrive.set_state_terminated()
-        sleep(1)
     
 def main(args=None):
     try:
