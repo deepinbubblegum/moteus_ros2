@@ -1,7 +1,5 @@
 #!/usr/bin/python3
-from array import array
 import threading
-from time import sleep
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
@@ -20,6 +18,12 @@ class MoteusNode(Node):
         self.rezero_on_startup = self.get_parameter("rezero_on_startup").value
         self.devices = self.get_parameter("moteus_ids").value
         
+        # initialize variables and objects
+        self.command = None
+        self.time_command = self.get_clock().now().to_msg()
+        self.time_command_seconds = self.get_clock().now().to_msg()
+        self.recv_command = {}
+        
         # initialize moteus drive cycle
         self.moteusDrive = MoteusDrive(self.devices)
         
@@ -35,18 +39,37 @@ class MoteusNode(Node):
         self.get_logger().info('MoteusNode started')
         
         # create publisher for moteus state
-        self.publisher_ = self.create_publisher(MoteusStateStamped, 'MoteusFeedback', 10)
+        self.publisher_ = self.create_publisher(MoteusStateStamped, 'moteus_feedback', 10)
+        self.subscriber_ = self.create_subscription(MoteusCommandStamped, 'moteus_command', self.callback_command, 10)
     
-        # create timer interval 0.5 second
-        timer_period = 0.01  # seconds
-        self.timer = self.create_timer(timer_period, self.callback_update)
+        # create timer interval
+        self.timer_state = self.create_timer(0.1, self.state_check)
+        self.timer_update = self.create_timer(0.01, self.interval_update)
         
     def declare_param(self):
         self.declare_parameter("frame_id", "moteus_drive", ParameterDescriptor(description="Frame ID"))
         self.declare_parameter("rezero_on_startup", False, ParameterDescriptor(description="Rezero on startup"))
         self.declare_parameter("moteus_ids",[1], ParameterDescriptor(description="Moteus IDs"))
 
-    def callback_update(self):
+    def callback_command(self, msg):
+        self.time_command = msg.header.stamp
+        self.commands = msg.commands
+        self.recv_command = {}
+        for idx, command in enumerate(self.commands):
+            self.recv_command[command.device_id] = {"velocity": command.velocity, "maximum_torque": command.maximum_torque, "position": None}
+        # send commands
+        self.moteusDrive.set_state_command(self.recv_command)
+        
+    def state_check(self):
+        now_seconds = self.get_clock().now().to_msg()
+        now_seconds = float(str(now_seconds.sec) + '.' + str(now_seconds.nanosec))
+        self.time_command_seconds = float(str(self.time_command.sec) + '.' + str(self.time_command.nanosec))
+        timeout = now_seconds - self.time_command_seconds
+        print(timeout)
+        if timeout >= 1: #timeout 1 second emergency stop
+            self.moteusDrive.set_state_brake()
+
+    def interval_update(self):
         feedback = self.moteusDrive.get_feedback()
         if feedback is not None:
             moteusStateStamped = MoteusStateStamped()
@@ -63,6 +86,7 @@ class MoteusNode(Node):
                 moteusStateMsg.temperature = feedback[index].values[moteus.Register(device).TEMPERATURE]
                 moteusStateMsg.fault = feedback[index].values[moteus.Register(device).FAULT]
                 moteusStateStamped.state.append(moteusStateMsg)
+                self.recv_command[device]["position"] = feedback[index].values[moteus.Register(device).POSITION]
             self.publisher_.publish(moteusStateStamped)
 
     def drive_rezero(self):

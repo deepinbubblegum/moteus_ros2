@@ -1,5 +1,6 @@
 import asyncio
 import math
+from time import sleep
 import moteus
 from rclpy.node import Node
 
@@ -14,6 +15,8 @@ class MoteusDrive(Node):
         self.get_logger().info('MoteusDriveState: %s' % self.state)
         self.raw_feedback = None
         self.rezero = False
+        self.servo_command = None
+        self.feedback_position_device = None
     
     async def run(self):
         transport = moteus.Fdcanusb()
@@ -25,7 +28,6 @@ class MoteusDrive(Node):
                 for idx, device_id in enumerate(self.ids):
                     self.make_stop.append(self.conn[idx].make_stop())
                 await transport.cycle(self.make_stop)
-                self.state = "start"
                 
             if self.rezero:
                 self.make_rezero = []  
@@ -34,14 +36,39 @@ class MoteusDrive(Node):
                 await transport.cycle(self.make_rezero)
                 self.rezero = False
                 
-            while self.terminate is False:
-                if self.state == "start":
-                    self.make_position = []
-                    for idx, device_id in enumerate(self.ids):
-                        self.make_position.append(self.conn[idx].make_position(position=math.nan, velocity=10.0, maximum_torque=1.0, query=True)) 
-                    self.set_feedback(await transport.cycle(self.make_position))
+            while self.terminate is False and self.state == "start" and self.servo_command is not None:
+                self.make_position = []
+                for idx, device_id in enumerate(self.ids):
+                    self.make_position.append(
+                        self.conn[idx].make_position(
+                            position=math.nan, 
+                            velocity=self.servo_command[device_id]["velocity"], 
+                            maximum_torque=self.servo_command[device_id]["maximum_torque"], 
+                            query=True
+                        )
+                    ) 
+                self.set_feedback(await transport.cycle(self.make_position))
                 await asyncio.sleep(0.01)
             await asyncio.sleep(0.01)
+            
+            if self.state == "brake" and self.servo_command is not None:
+                self.make_brake = []
+                for idx, device_id in enumerate(self.ids):
+                    self.make_brake.append(
+                        self.conn[idx].make_position(
+                            position = math.nan, 
+                            velocity = 0.0, 
+                            maximum_torque = self.servo_command[device_id]["maximum_torque"],
+                            stop_position = self.servo_command[device_id]["position"] + 20.0,
+                            query=True
+                        )
+                    ) 
+                self.set_feedback(await transport.cycle(self.make_brake))
+                # self.state = "stop"
+                # self.servo_command = None
+                self.get_logger().info('MoteusDriveState: %s' % self.state)
+                await asyncio.sleep(0.01)
+                self.state == "braked"
             
     def set_feedback(self, feedback):
         self.raw_feedback = feedback
@@ -52,7 +79,7 @@ class MoteusDrive(Node):
     def run_start(self):
         asyncio.run(self.run())
         
-    def start(self):
+    def set_state_start(self):
         self.state = "start"
         self.get_logger().info('MoteusDriveState: %s' % self.state)
         
@@ -68,3 +95,12 @@ class MoteusDrive(Node):
         self.set_state_stop()
         self.terminate = True
         self.get_logger().info('MoteusDriveState: %s' % self.state)
+        
+    def set_state_brake(self):
+        self.state = "stop"
+        self.get_logger().info('MoteusDriveState: %s' % self.state)
+    
+    def set_state_command(self, command):
+        self.servo_command = command
+        if self.state != "start":
+            self.state = "start"
