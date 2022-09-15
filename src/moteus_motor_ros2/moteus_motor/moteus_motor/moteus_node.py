@@ -11,7 +11,7 @@ from moteus_msgs.msg import MoteusState, MoteusStateStamped
 
 class MoteusNode(Node):
     def __init__(self):
-        super().__init__('MoteusNode')
+        super().__init__('moteus_motor')
         # declare parameters
         self.declare_param()
         
@@ -35,11 +35,8 @@ class MoteusNode(Node):
         self.timer = self.create_timer(timer_period, self.callback_update)
         
     def declare_param(self):
-        self.declare_parameter(
-            "moteus_ids",
-            [1, 2],
-            ParameterDescriptor(description="Moteus IDs")
-        )
+        self.declare_parameter("frame_id", "moteus_drive", ParameterDescriptor(description="Frame ID"))
+        self.declare_parameter("moteus_ids",[1], ParameterDescriptor(description="Moteus IDs"))
 
     def callback_update(self):
         feedback = self.moteusDrive.get_feedback()

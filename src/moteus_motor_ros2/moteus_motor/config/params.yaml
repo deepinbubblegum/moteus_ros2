@@ -1,0 +1,6 @@
+moteus_motor:
+  ros__parameters:
+    frame_id: "moteus"
+    moteus_ids:
+      - 1
+      - 2

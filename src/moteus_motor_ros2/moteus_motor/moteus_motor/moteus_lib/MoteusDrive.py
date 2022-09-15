@@ -1,6 +1,5 @@
 import asyncio
 import math
-from time import sleep
 import moteus
 from rclpy.node import Node
 
@@ -14,6 +13,7 @@ class MoteusDrive(Node):
         self.get_logger().info('MoteusDrive: Initialized')
         self.get_logger().info('MoteusDriveState: %s' % self.state)
         self.raw_feedback = None
+        self.rezero = False
     
     def set_feedback(self, feedback):
         self.raw_feedback = feedback
@@ -25,7 +25,7 @@ class MoteusDrive(Node):
         transport = moteus.Fdcanusb()
         for id in self.ids:
             self.conn.append(moteus.Controller(id = id))
-        while True:
+        while True:            
             if self.state == "stop":
                 self.make_stop = []  
                 for id in range(len(self.ids)):
@@ -33,12 +33,18 @@ class MoteusDrive(Node):
                 await transport.cycle(self.make_stop)
                 self.state = "start"
                 
+            if self.rezero:
+                self.make_rezero = []  
+                for id in range(len(self.ids)):
+                    self.make_rezero.append(self.conn[id].make_rezero())
+                await transport.cycle(self.make_rezero)
+                self.rezero = False
+                
             while self.terminate is False:
                 if self.state == "start":
                     self.make_position = []
                     for id in range(len(self.ids)):
                         self.make_position.append(self.conn[id].make_position(position=math.nan, velocity=10.0, maximum_torque=1.0, query=True)) 
-                    # print(await transport.cycle(self.make_position))
                     self.set_feedback(await transport.cycle(self.make_position))
                 await asyncio.sleep(0.01)
             await asyncio.sleep(0.01)
@@ -53,9 +59,12 @@ class MoteusDrive(Node):
     def stop(self):
         self.state = "stop"
         self.get_logger().info('MoteusDriveState: %s' % self.state)
+        
+    def rezero(self):
+        self.rezero = True
+        self.get_logger().info('MoteusDriveRezero: %s' % self.rezero)
     
     def terminated(self):
         self.stop()
-        # sleep(1)
         self.terminate = True
         self.get_logger().info('MoteusDriveState: %s' % self.state)

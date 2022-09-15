@@ -5,7 +5,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
     config = os.path.join(
-        get_package_share_directory('bno055'),
+        get_package_share_directory('moteus_motor'),
         'config',
         'params.yaml'
     )
@@ -16,4 +16,4 @@ def generate_launch_description():
         parameters = [config]
     )
     ld.add_action(node)
-    return 
+    return ld
