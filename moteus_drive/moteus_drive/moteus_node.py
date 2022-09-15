@@ -7,7 +7,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from moteus_drive.moteus_control.MoteusDrive import MoteusDrive
 import moteus
-from moteus_msgs.msg import MoteusState, MoteusStateStamped
+from moteus_msgs.msg import MoteusState, MoteusStateStamped, MoteusCommandStamped
 
 class MoteusNode(Node):
     def __init__(self):
@@ -36,7 +36,7 @@ class MoteusNode(Node):
         
         # create publisher for moteus state
         self.publisher_ = self.create_publisher(MoteusStateStamped, 'MoteusFeedback', 10)
-        
+    
         # create timer interval 0.5 second
         timer_period = 0.01  # seconds
         self.timer = self.create_timer(timer_period, self.callback_update)
