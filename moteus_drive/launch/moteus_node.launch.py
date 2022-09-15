@@ -5,14 +5,14 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
     config = os.path.join(
-        get_package_share_directory('moteus_motor'),
+        get_package_share_directory('moteus_drive'),
         'config',
         'params.yaml'
     )
         
     node=Node(
-        package = 'moteus_motor',
-        executable = 'moteus_motor',
+        package = 'moteus_drive',
+        executable = 'moteus_drive',
         parameters = [config]
     )
     ld.add_action(node)
