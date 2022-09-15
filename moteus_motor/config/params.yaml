@@ -1,0 +1,7 @@
+moteus_motor:
+  ros__parameters:
+    frame_id: "moteus"
+    rezero_on_startup: false
+    moteus_ids:
+      - 1
+      - 2
