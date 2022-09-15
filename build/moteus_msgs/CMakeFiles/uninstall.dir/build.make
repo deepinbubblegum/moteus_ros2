@@ -53,7 +53,7 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs
+CMAKE_SOURCE_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs
@@ -78,6 +78,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

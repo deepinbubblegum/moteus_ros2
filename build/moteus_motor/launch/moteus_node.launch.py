@@ -1,1 +1,1 @@
-/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor/launch/moteus_node.launch.py
+/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_motor/launch/moteus_node.launch.py

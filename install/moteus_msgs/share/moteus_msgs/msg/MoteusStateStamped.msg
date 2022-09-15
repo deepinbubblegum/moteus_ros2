@@ -1,1 +1,1 @@
-/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs/msg/MoteusStateStamped.msg
+/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs/msg/MoteusStateStamped.msg

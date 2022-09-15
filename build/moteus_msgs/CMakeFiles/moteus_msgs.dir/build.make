@@ -53,7 +53,7 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs
+CMAKE_SOURCE_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs
@@ -66,8 +66,8 @@ include CMakeFiles/moteus_msgs.dir/compiler_depend.make
 # Include the progress variables for this target.
 include CMakeFiles/moteus_msgs.dir/progress.make
 
-CMakeFiles/moteus_msgs: /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs/msg/MoteusStateStamped.msg
-CMakeFiles/moteus_msgs: /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs/msg/MoteusState.msg
+CMakeFiles/moteus_msgs: /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs/msg/MoteusStateStamped.msg
+CMakeFiles/moteus_msgs: /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs/msg/MoteusState.msg
 CMakeFiles/moteus_msgs: /opt/ros/humble/share/builtin_interfaces/msg/Duration.idl
 CMakeFiles/moteus_msgs: /opt/ros/humble/share/builtin_interfaces/msg/Time.idl
 CMakeFiles/moteus_msgs: /opt/ros/humble/share/std_msgs/msg/Bool.idl
@@ -114,6 +114,6 @@ CMakeFiles/moteus_msgs.dir/clean:
 .PHONY : CMakeFiles/moteus_msgs.dir/clean
 
 CMakeFiles/moteus_msgs.dir/depend:
-	cd /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs/CMakeFiles/moteus_msgs.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs/CMakeFiles/moteus_msgs.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/moteus_msgs.dir/depend
 

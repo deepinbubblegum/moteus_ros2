@@ -337,7 +337,7 @@ moteus_msgs_BINARY_DIR:STATIC=/home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus
 moteus_msgs_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
-moteus_msgs_SOURCE_DIR:STATIC=/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs
+moteus_msgs_SOURCE_DIR:STATIC=/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs
 
 //Dependencies for the target
 moteus_msgs__rosidl_generator_c_LIB_DEPENDS:STATIC=general;builtin_interfaces::builtin_interfaces__rosidl_generator_c;general;std_msgs::std_msgs__rosidl_generator_c;general;rosidl_runtime_c::rosidl_runtime_c;general;rcutils::rcutils;
@@ -520,7 +520,7 @@ CMAKE_GENERATOR_PLATFORM:INTERNAL=
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
 //Source directory with the top level CMakeLists.txt file for this
 // project
-CMAKE_HOME_DIRECTORY:INTERNAL=/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs
+CMAKE_HOME_DIRECTORY:INTERNAL=/home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs
 //Install .so files without execute permission.
 CMAKE_INSTALL_SO_NO_EXE:INTERNAL=1
 //ADVANCED property for variable: CMAKE_LINKER

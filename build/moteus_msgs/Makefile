@@ -57,7 +57,7 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs
+CMAKE_SOURCE_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /home/bubble/Develops/ROS2/pkg_dev_ws/build/moteus_msgs

@@ -1,4 +1,4 @@
-# Install script for directory: /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_msgs
+# Install script for directory: /home/bubble/Develops/ROS2/pkg_dev_ws/src/moteus_motor_ros2/moteus_msgs
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
