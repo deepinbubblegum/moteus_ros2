@@ -5,7 +5,7 @@ from time import sleep
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
-from moteus_motor.moteus_lib.MoteusDrive import MoteusDrive
+from moteus_motor.moteus_control.MoteusDrive import MoteusDrive
 import moteus
 from moteus_msgs.msg import MoteusState, MoteusStateStamped
 
