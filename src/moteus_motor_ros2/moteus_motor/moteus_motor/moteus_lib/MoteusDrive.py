@@ -56,15 +56,15 @@ class MoteusDrive(Node):
         self.state = "start"
         self.get_logger().info('MoteusDriveState: %s' % self.state)
         
-    def stop(self):
+    def set_state_stop(self):
         self.state = "stop"
         self.get_logger().info('MoteusDriveState: %s' % self.state)
         
-    def rezero(self):
+    def set_state_rezero(self):
         self.rezero = True
         self.get_logger().info('MoteusDriveRezero: %s' % self.rezero)
     
-    def terminated(self):
-        self.stop()
+    def set_state_terminated(self):
+        self.set_state_stop()
         self.terminate = True
         self.get_logger().info('MoteusDriveState: %s' % self.state)

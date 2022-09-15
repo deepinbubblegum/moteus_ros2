@@ -15,15 +15,22 @@ class MoteusNode(Node):
         # declare parameters
         self.declare_param()
         
-        # get devices id list
+        # get parameters values
+        self.frame_id = self.get_parameter("frame_id").value
+        self.rezero_on_startup = self.get_parameter("rezero_on_startup").value
         self.devices = self.get_parameter("moteus_ids").value
         
         # initialize moteus drive cycle
         self.moteusDrive = MoteusDrive(self.devices)
         
+        # initialize start state drive
+        self.drive_rezero()
+        
         # create thread for moteus drive cycle
         thread = threading.Thread(target=self.moteusDrive.run_start, args=())
         thread.daemon = True
+        
+        #start thread
         thread.start()
         self.get_logger().info('MoteusNode started')
         
@@ -36,13 +43,14 @@ class MoteusNode(Node):
         
     def declare_param(self):
         self.declare_parameter("frame_id", "moteus_drive", ParameterDescriptor(description="Frame ID"))
+        self.declare_parameter("rezero_on_startup", False, ParameterDescriptor(description="Rezero on startup"))
         self.declare_parameter("moteus_ids",[1], ParameterDescriptor(description="Moteus IDs"))
 
     def callback_update(self):
         feedback = self.moteusDrive.get_feedback()
         if feedback is not None:
             moteusStateStamped = MoteusStateStamped()
-            moteusStateStamped.header.frame_id = "moteus"
+            moteusStateStamped.header.frame_id = self.frame_id
             moteusStateStamped.header.stamp = self.get_clock().now().to_msg()
             for index, device in enumerate(self.devices):
                 moteusStateMsg = MoteusState()
@@ -57,12 +65,17 @@ class MoteusNode(Node):
                 moteusStateStamped.state.append(moteusStateMsg)
             self.publisher_.publish(moteusStateStamped)
 
+    def drive_rezero(self):
+        if self.rezero_on_startup:
+            self.moteusDrive.set_state_rezero()
+            self.get_logger().info('MoteusNode rezero')
+        
     def drive_stop(self):
-        self.moteusDrive.stop()
+        self.moteusDrive.set_state_stop()
         
     def drive_terminate(self):
         self.get_logger().info('MoteusNode terminated')
-        self.moteusDrive.terminated()
+        self.moteusDrive.set_state_terminated()
         sleep(1)
     
 def main(args=None):
