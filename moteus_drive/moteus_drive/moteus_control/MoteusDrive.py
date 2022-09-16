@@ -59,7 +59,7 @@ class MoteusDrive(Node):
                             position = math.nan, 
                             velocity = 0.0, 
                             maximum_torque = self.servo_command[device_id]["maximum_torque"],
-                            stop_position = self.servo_command[device_id]["position"] + 20.0,
+                            stop_position = self.servo_command[device_id]["position"] + self.servo_command[device_id]["velocity"],
                             query=True
                         )
                     ) 
@@ -97,6 +97,7 @@ class MoteusDrive(Node):
         self.get_logger().info('MoteusDriveState: %s' % self.state)
         
     def set_state_brake(self):
+        # self.state = "brake"
         self.state = "stop"
         self.get_logger().info('MoteusDriveState: %s' % self.state)
     
