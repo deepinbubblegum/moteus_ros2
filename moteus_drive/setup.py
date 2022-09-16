@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'moteus_motor'
+package_name = 'moteus_drive'
 
 setup(
     name=package_name,
@@ -21,12 +21,12 @@ setup(
     zip_safe=True,
     maintainer='bubble',
     maintainer_email='chaiwit.p@groupmaker.co.th',
-    description='moteus_motor',
-    license='Apache-2.0',
+    description='moteus_drive',
+    license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "moteus_motor = moteus_motor.moteus_node:main"
+            "moteus_drive = moteus_drive.moteus_node:main"
         ],
     },
 )
