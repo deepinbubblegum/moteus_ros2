@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 import threading
+import math
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from moteus_drive.moteus_control.MoteusDrive import MoteusDrive
 import moteus
+from sensor_msgs.msg import Imu
 from moteus_msgs.msg import MoteusState, MoteusStateStamped, MoteusCommandStamped
 
 class MoteusNode(Node):
@@ -43,7 +45,9 @@ class MoteusNode(Node):
         self.get_logger().info('MoteusNode started')
         
         # create publisher for moteus state
-        self.publisher_ = self.create_publisher(MoteusStateStamped, 'moteus_feedback', 10)
+        self.publisher_ = self.create_publisher(MoteusStateStamped, 'moteus_feedback', 100)
+        if self.connector_device == "pi3hat":
+            self.publisher_imu_ = self.create_publisher(Imu, 'moteus_imu', 100)
         self.subscriber_ = self.create_subscription(MoteusCommandStamped, 'moteus_command', self.callback_command, 10)
     
         # create timer interval
@@ -52,7 +56,7 @@ class MoteusNode(Node):
         
     def declare_param(self):
         self.declare_parameter("frame_id", "moteus_drive", ParameterDescriptor(description="Frame ID"))
-        self.declare_parameter("connector_device", "fdcanusb", ParameterDescriptor(description="Conector device"))
+        self.declare_parameter("connector_device", "pi3hat", ParameterDescriptor(description="Conector device"))
         self.declare_parameter("rezero_on_startup", False, ParameterDescriptor(description="Rezero on startup"))
         self.declare_parameter("moteus_ids", [1], ParameterDescriptor(description="Moteus IDs"))
 
@@ -70,29 +74,59 @@ class MoteusNode(Node):
         now_seconds = float(str(now_seconds.sec) + '.' + str(now_seconds.nanosec))
         self.time_command_seconds = float(str(self.time_command.sec) + '.' + str(self.time_command.nanosec))
         timeout = now_seconds - self.time_command_seconds
-        print(timeout)
         if timeout >= 1: #timeout 1 second emergency stop
             self.moteusDrive.set_state_brake()
 
     def interval_update(self):
-        feedback = self.moteusDrive.get_feedback()
-        if feedback is not None:
+        imu_feedback, drive_feedback = self.moteusDrive.get_feedback()
+        if drive_feedback is not None:
+            stamp = self.get_clock().now().to_msg()
             moteusStateStamped = MoteusStateStamped()
             moteusStateStamped.header.frame_id = self.frame_id
-            moteusStateStamped.header.stamp = self.get_clock().now().to_msg()
+            moteusStateStamped.header.stamp = stamp
             for index, device in enumerate(self.devices):
                 moteusStateMsg = MoteusState()
                 moteusStateMsg.device_id = device
-                moteusStateMsg.mode = feedback[index].values[moteus.Register(device).MODE]
-                moteusStateMsg.position = feedback[index].values[moteus.Register(device).POSITION]
-                moteusStateMsg.velocity = feedback[index].values[moteus.Register(device).VELOCITY]
-                moteusStateMsg.torque = feedback[index].values[moteus.Register(device).TORQUE]
-                moteusStateMsg.voltage = feedback[index].values[moteus.Register(device).VOLTAGE]
-                moteusStateMsg.temperature = feedback[index].values[moteus.Register(device).TEMPERATURE]
-                moteusStateMsg.fault = feedback[index].values[moteus.Register(device).FAULT]
+                moteusStateMsg.mode = drive_feedback[index].values[moteus.Register(device).MODE]
+                moteusStateMsg.position = drive_feedback[index].values[moteus.Register(device).POSITION]
+                moteusStateMsg.velocity = drive_feedback[index].values[moteus.Register(device).VELOCITY]
+                moteusStateMsg.torque = drive_feedback[index].values[moteus.Register(device).TORQUE]
+                moteusStateMsg.voltage = drive_feedback[index].values[moteus.Register(device).VOLTAGE]
+                moteusStateMsg.temperature = drive_feedback[index].values[moteus.Register(device).TEMPERATURE]
+                moteusStateMsg.fault = drive_feedback[index].values[moteus.Register(device).FAULT]
                 moteusStateStamped.state.append(moteusStateMsg)
-                self.recv_command[device]["position"] = feedback[index].values[moteus.Register(device).POSITION]
+                try:
+                    self.recv_command[device]["position"] = drive_feedback[index].values[moteus.Register(device).POSITION]
+                except:
+                    pass
             self.publisher_.publish(moteusStateStamped)
+            if imu_feedback is not None:
+                imu_data = Imu()
+                imu_data.header.stamp = stamp
+                imu_data.header.frame_id = "moteus_imu"
+                
+                # Quaternion
+                att = imu_feedback.attitude
+                imu_data.orientation.w = att.w
+                imu_data.orientation.x = att.x
+                imu_data.orientation.y = att.y
+                imu_data.orientation.z = att.z
+                
+                # Angular velocity
+                rate_dps = imu_feedback.rate_dps
+                omega_x = rate_dps.x * math.pi / 180
+                omega_y = rate_dps.y * math.pi / 180
+                omega_z = rate_dps.z * math.pi / 180
+                imu_data.angular_velocity.x = omega_x
+                imu_data.angular_velocity.y = omega_y
+                imu_data.angular_velocity.z = omega_z
+                
+                # Linear acceleration
+                accel_mps2 = imu_feedback.accel_mps2
+                imu_data.linear_acceleration.x = accel_mps2.x
+                imu_data.linear_acceleration.y = accel_mps2.y
+                imu_data.linear_acceleration.z = accel_mps2.z
+                self.publisher_imu_.publish(imu_data)
 
     def drive_rezero(self):
         if self.rezero_on_startup:
