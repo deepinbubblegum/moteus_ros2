@@ -23,6 +23,7 @@ class MoteusDrive(Node):
         self.servo_command = None
         self.feedback_position_device = None
         self.bus_map = {1: [1], 2: [2]}
+        self.imu_data = None
     
     async def run(self):
         for idx, device_id in enumerate(self.ids):
@@ -32,7 +33,9 @@ class MoteusDrive(Node):
         if self.Connector == "fdcanusb":
             transport = moteus.Fdcanusb()
         elif self.Connector == "pi3hat":
-            transport = moteus_pi3hat.Pi3HatRouter(servo_bus_map=self.bus_map)
+            transport = moteus_pi3hat.Pi3HatRouter(
+                servo_bus_map=self.bus_map
+            )
             
         for idx, device_id in enumerate(self.ids):
             self.conn.append(moteus.Controller(id = device_id))
@@ -40,14 +43,20 @@ class MoteusDrive(Node):
             if self.state == "stop":
                 self.make_stop = []  
                 for idx, device_id in enumerate(self.ids):
-                    self.make_stop.append(self.conn[idx].make_stop())
-                await transport.cycle(self.make_stop)
+                    self.make_stop.append(self.conn[idx].make_stop(query=True))
+                if self.Connector == "pi3hat":
+                    self.set_feedback(await transport.cycle(self.make_stop, request_attitude=True))
+                else:
+                    self.set_feedback(await transport.cycle(self.make_stop))
                 
             if self.rezero:
                 self.make_rezero = []  
                 for idx, device_id in enumerate(self.ids):
-                    self.make_rezero.append(self.conn[idx].make_rezero())
-                await transport.cycle(self.make_rezero)
+                    self.make_rezero.append(self.conn[idx].make_rezero(query=True))
+                if self.Connector == "pi3hat":
+                    self.set_feedback(await transport.cycle(self.make_rezero, request_attitude=True))
+                else:
+                    self.set_feedback(await transport.cycle(self.make_rezero))
                 self.rezero = False
                 
             while self.terminate is False and self.state == "start" and self.servo_command is not None:
@@ -61,7 +70,10 @@ class MoteusDrive(Node):
                             query=True
                         )
                     ) 
-                self.set_feedback(await transport.cycle(self.make_position))
+                if self.Connector == "pi3hat":
+                    self.set_feedback(await transport.cycle(self.make_position, request_attitude=True))
+                else:
+                    self.set_feedback(await transport.cycle(self.make_position))
                 await asyncio.sleep(0.01)
             await asyncio.sleep(0.01)
             
@@ -77,7 +89,10 @@ class MoteusDrive(Node):
                             query=True
                         )
                     ) 
-                self.set_feedback(await transport.cycle(self.make_brake))
+                if self.Connector == "pi3hat":
+                    self.set_feedback(await transport.cycle(self.make_brake, request_attitude=True))
+                else:
+                    self.set_feedback(await transport.cycle(self.make_brake))
                 # self.state = "stop"
                 # self.servo_command = None
                 self.get_logger().info('MoteusDriveState: %s' % self.state)
@@ -85,10 +100,27 @@ class MoteusDrive(Node):
                 self.state == "braked"
             
     def set_feedback(self, feedback):
-        self.raw_feedback = feedback
+        if self.Connector == "pi3hat" and len(feedback) >= 1:
+            imu_result = [x for x in feedback if x.id == -1 and isinstance(x, moteus_pi3hat.CanAttitudeWrapper)][0]
+            feedback.pop(-1)
+            
+            # att = imu_result.attitude
+            # print("\n")
+            # print(f"attitude={att.w:.4f},{att.x:.4f},{att.y:.4f},{att.z:.4f}")
+            # rate_dps = imu_result.rate_dps
+            # print(f"rate_dps={rate_dps.x:.3f},{rate_dps.y:.3f},{rate_dps.z:.3f}")
+            # accel_mps2 = imu_result.accel_mps2
+            # print(f"accel_mps2={accel_mps2.x:.3f},{accel_mps2.y:.3f},{accel_mps2.z:.3f}")
+            # euler_rad = imu_result.euler_rad
+            # print(f"euler_rad= r={euler_rad.roll:.3f},p={euler_rad.pitch:.3f},y={euler_rad.yaw:.3f}")
+            
+            self.raw_feedback = feedback
+            self.imu_data_feedback = imu_result
+        else:
+            self.raw_feedback = feedback
     
     def get_feedback(self):
-        return self.raw_feedback
+        return self.imu_data_feedback, self.raw_feedback
     
     def run_start(self):
         asyncio.run(self.run())
