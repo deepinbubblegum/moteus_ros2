@@ -2,12 +2,17 @@ import asyncio
 import math
 from time import sleep
 import moteus
+try:
+    import moteus_pi3hat
+except ImportError:
+    pass
 from rclpy.node import Node
 
 class MoteusDrive(Node):
-    def __init__(self, IDs):
+    def __init__(self, Connector, IDs):
         super().__init__('MoteusDriveCycle')
         self.ids = IDs
+        self.Connector = Connector            
         self.conn = []
         self.state = "stop"
         self.terminate = False
@@ -17,9 +22,18 @@ class MoteusDrive(Node):
         self.rezero = False
         self.servo_command = None
         self.feedback_position_device = None
+        self.bus_map = {1: [1], 2: [2]}
     
     async def run(self):
-        transport = moteus.Fdcanusb()
+        for idx, device_id in enumerate(self.ids):
+           self.bus_map[idx+1] = [int(device_id)]
+        
+        # create transport init device
+        if self.Connector == "fdcanusb":
+            transport = moteus.Fdcanusb()
+        elif self.Connector == "pi3hat":
+            transport = moteus_pi3hat.Pi3HatRouter(servo_bus_map=self.bus_map)
+            
         for idx, device_id in enumerate(self.ids):
             self.conn.append(moteus.Controller(id = device_id))
         while True:            

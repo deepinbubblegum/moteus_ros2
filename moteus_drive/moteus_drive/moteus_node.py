@@ -15,6 +15,7 @@ class MoteusNode(Node):
         
         # get parameters values
         self.frame_id = self.get_parameter("frame_id").value
+        self.connector_device = self.get_parameter("connector_device").value
         self.rezero_on_startup = self.get_parameter("rezero_on_startup").value
         self.devices = self.get_parameter("moteus_ids").value
         
@@ -25,7 +26,10 @@ class MoteusNode(Node):
         self.recv_command = {}
         
         # initialize moteus drive cycle
-        self.moteusDrive = MoteusDrive(self.devices)
+        self.moteusDrive = MoteusDrive(
+            self.connector_device, 
+            self.devices
+        )
         
         # initialize start state drive
         self.drive_rezero()
@@ -48,8 +52,9 @@ class MoteusNode(Node):
         
     def declare_param(self):
         self.declare_parameter("frame_id", "moteus_drive", ParameterDescriptor(description="Frame ID"))
+        self.declare_parameter("connector_device", "fdcanusb", ParameterDescriptor(description="Conector device"))
         self.declare_parameter("rezero_on_startup", False, ParameterDescriptor(description="Rezero on startup"))
-        self.declare_parameter("moteus_ids",[1], ParameterDescriptor(description="Moteus IDs"))
+        self.declare_parameter("moteus_ids", [1], ParameterDescriptor(description="Moteus IDs"))
 
     def callback_command(self, msg):
         self.time_command = msg.header.stamp
