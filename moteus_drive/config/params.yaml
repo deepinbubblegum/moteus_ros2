@@ -1,6 +1,7 @@
 moteus_drive:
   ros__parameters:
     frame_id: "moteus"
+    connector_device: "pi3hat" #fdcanusb or pi3hat
     rezero_on_startup: false
     moteus_ids:
       - 1
