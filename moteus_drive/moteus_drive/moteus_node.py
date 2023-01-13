@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import threading
 import math
+import re
 import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
@@ -80,25 +81,65 @@ class MoteusNode(Node):
     def interval_update(self):
         imu_feedback, drive_feedback = self.moteusDrive.get_feedback()
         if drive_feedback is not None:
+            data_string = drive_feedback[1:-1]
+
+            # split the string into a list of strings, one for each data point
+            data_points = re.split(r'}, ', data_string)
+
+            # create an empty dictionary to store the parsed data
+            parsed_data = {}
+
+            # iterate over the data points
+            for data_point in data_points:
+                # add a comma at the end of each data point
+                data_point += '}'
+                # extract the device id
+                device_id = re.match(r'(\d+)/', data_point).groups()[0]
+                # extract the key-value pairs
+                kvpairs = re.findall(r'(\w+)\((0x[0-9a-f]+)\): ([\w.-]+)', data_point)
+                #create a dictionary for the device and add the key-value pairs
+                device_data = {}
+                for kv in kvpairs:
+                    device_data[kv[0]] = kv[2]
+                parsed_data[device_id] = device_data
+    
             stamp = self.get_clock().now().to_msg()
             moteusStateStamped = MoteusStateStamped()
             moteusStateStamped.header.frame_id = self.frame_id
             moteusStateStamped.header.stamp = stamp
+            
             for index, device in enumerate(self.devices):
+                drive_id = str(device)
                 moteusStateMsg = MoteusState()
+                
                 moteusStateMsg.device_id = device
-                moteusStateMsg.mode = drive_feedback[index].values[moteus.Register(device).MODE]
-                moteusStateMsg.position = drive_feedback[index].values[moteus.Register(device).POSITION]
-                moteusStateMsg.velocity = drive_feedback[index].values[moteus.Register(device).VELOCITY]
-                moteusStateMsg.torque = drive_feedback[index].values[moteus.Register(device).TORQUE]
-                moteusStateMsg.voltage = drive_feedback[index].values[moteus.Register(device).VOLTAGE]
-                moteusStateMsg.temperature = drive_feedback[index].values[moteus.Register(device).TEMPERATURE]
-                moteusStateMsg.fault = drive_feedback[index].values[moteus.Register(device).FAULT]
+                moteusStateMsg.mode = parsed_data[drive_id]["MODE"]
+                moteusStateMsg.position = parsed_data[drive_id]["POSITION"]
+                moteusStateMsg.velocity = parsed_data[drive_id]["VELOCITY"]
+                moteusStateMsg.torque = parsed_data[drive_id]["TORQUE"]
+                moteusStateMsg.voltage = parsed_data[drive_id]["VOLTAGE"]
+                moteusStateMsg.temperature = parsed_data[drive_id]["TEMPERATURE"]
+                moteusStateMsg.fault = parsed_data[drive_id]["FAULT"]
                 moteusStateStamped.state.append(moteusStateMsg)
                 try:
-                    self.recv_command[device]["position"] = drive_feedback[index].values[moteus.Register(device).POSITION]
+                    self.recv_command[device]["position"] = parsed_data[drive_id]["POSITION"]
                 except:
                     pass
+                
+                # moteusStateMsg.device_id = device
+                # moteusStateMsg.mode = drive_feedback[index].values[moteus.Register(device).MODE]
+                # moteusStateMsg.position = drive_feedback[index].values[moteus.Register(device).POSITION]
+                # moteusStateMsg.velocity = drive_feedback[index].values[moteus.Register(device).VELOCITY]
+                # moteusStateMsg.torque = drive_feedback[index].values[moteus.Register(device).TORQUE]
+                # moteusStateMsg.voltage = drive_feedback[index].values[moteus.Register(device).VOLTAGE]
+                # moteusStateMsg.temperature = drive_feedback[index].values[moteus.Register(device).TEMPERATURE]
+                # moteusStateMsg.fault = drive_feedback[index].values[moteus.Register(device).FAULT]
+                # moteusStateStamped.state.append(moteusStateMsg)
+                # try:
+                #     self.recv_command[device]["position"] = drive_feedback[index].values[moteus.Register(device).POSITION]
+                # except:
+                #     pass
+                
             self.publisher_.publish(moteusStateStamped)
             if imu_feedback is not None:
                 imu_data = Imu()
